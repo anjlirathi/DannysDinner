@@ -37,3 +37,43 @@ SELECT  DISTINCT customer_id, product_name , order_date
 FROM Ordered_sales
 WHERE order_rank = 1
 ;
+
+-- Q4 : What is the most purchased item on the menu and how many times was it purchased by all customers?
+
+SELECT 
+  menu.product_name,
+  Count(Sales.*) As total_purchases
+From dannys_diner.menu
+Inner Join dannys_diner.sales
+ON menu.product_id = sales.product_id
+Group By product_name
+Limit 1;
+
+-- Q5 : Which item(s) was the most popular for each customer?
+
+WITH customer_item_cte AS (
+SELECT
+  sales.customer_id,
+  menu.product_name,
+  COUNT(sales.*) as Frequent_Item_Purchase,
+  DENSE_RANK() Over(
+         PARTITION BY sales.customer_id
+         ORDER BY COUNT(sales.*) DESC
+  ) AS item_rank
+FROM dannys_diner.menu
+INNER JOIN dannys_diner.sales
+ON menu.product_id = sales.product_id
+GROUP BY sales.customer_id ,menu.product_name
+)
+SELECT 
+  customer_id,
+  product_name,
+  Frequent_Item_Purchase
+FROM customer_item_cte
+WHERE item_rank =1
+;
+
+
+
+
+
